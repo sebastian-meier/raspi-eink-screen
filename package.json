@@ -1,0 +1,25 @@
+{
+  "name": "raspi-eink-screen",
+  "version": "1.0.0",
+  "description": "Raspberry Pi driven e-ink screen displaying various components (weather, mail, calendar, ...)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sebastian-meier/raspi-eink-screen.git"
+  },
+  "author": "sebastian-meier",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sebastian-meier/raspi-eink-screen/issues"
+  },
+  "homepage": "https://github.com/sebastian-meier/raspi-eink-screen#readme",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "imap": "^0.8.19",
+    "node-gd": "^2.1.1",
+    "node-ical": "^0.15.3"
+  }
+}
