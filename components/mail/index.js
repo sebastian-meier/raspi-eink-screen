@@ -1,7 +1,14 @@
 const Imap = require('imap');
+const {bboxCalc} = require('../../utils');
 
 class compMail {
   constructor() {}
+
+  notes = [];
+
+  notesLimit = 2;
+  notesLineMax = 16;
+  emailShorten = process.env.EMAIL_SHORTEN.split(';').map(e => e.split(','));
 
   allowedSenders = process.env.ALLOWED_SENDERS.split(',');
 
@@ -64,7 +71,7 @@ class compMail {
   
   imapFetch = (imap, res) => {
     return new Promise((resolve, reject) => {
-      const f = imap.seq.fetch(res.slice(res.length - 2), {
+      const f = imap.seq.fetch(res.slice(res.length - this.notesLimit), {
         bodies: [
           'HEADER.FIELDS (DKIM-SIGNATURE FROM DATE SUBJECT)',
           '1',
@@ -91,10 +98,24 @@ class compMail {
                 note[key] = els[key][0];
               });
             } else {
-              const message = buffer.split('\r\n').filter((l, li) => (li <= 4 && (li%2 === 0)));
-              note.url = message[0];
-              note.tags = message[1].split(',').map(t => t.trim());
-              note.description = message[2];
+              const message = [];
+              const lines = buffer.split('-- \r\n')[0].split('\r\n');
+              lines.forEach((line) => {
+                if (message.length < 4) {
+                  if (
+                    line.length > 0 &&
+                    line.substring(0,4) != '----' &&
+                    line.substring(0, 8) != 'Content-'
+                  ) {
+                    while(line.length > this.notesLineMax) {
+                      message.push(line.substring(0, this.notesLineMax));
+                      line = line.substring(this.notesLineMax);
+                    }
+                    message.push(line);
+                  }
+                }
+              });
+              note.description = message.join('\r\n').trim();
             }
           });
         });
@@ -119,15 +140,30 @@ class compMail {
     const res = await this.imapSearch(imap);
 
     if (res && res.length >= 1) {
-      const notes = await this.imapFetch(imap, res);
-      console.log(notes);
+      this.notes = await this.imapFetch(imap, res);
     }
-
     imap.end();
   }
 
-  draw() {
+  draw(x, y, img, mailImg, font) {
+    const txtColor = img.colorAllocate(0, 0, 0);
 
+    let offsetY = 0;
+
+    this.notes.forEach((note) => {
+      let from = note.from.split(' <')[0];
+      this.emailShorten.forEach((e) => {
+        if (from.toLowerCase().includes(e[0])) { from = e[1] }
+      });
+      from += ':';
+      mailImg.copyResized(img, x, y + offsetY, 0, 0, 36, 36, 72, 72);
+      img.stringFT(txtColor, font, 18, 0, x + 40, y + 26 + offsetY, from);
+      let bbox = bboxCalc(img, from, 18, font);
+      img.line(x, y + 36 + offsetY, x + 40 + bbox.width, y + 36 + offsetY, txtColor);
+      img.stringFT(txtColor, font, 18, 0, x, y + 66 + offsetY, note.description);
+      bbox = bboxCalc(img, note.description, 18, font);
+      offsetY += 66 + bbox.height;
+    });
   }
 }
 

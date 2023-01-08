@@ -1,0 +1,14 @@
+{
+  "today": {
+    "de": "Heute",
+    "en": "Today"
+  },
+  "tomorrow": {
+    "de": "Morgen",
+    "en": "Tomorrow"
+  },
+  "no_events": {
+    "de": "Keine aktuellen Termine",
+    "en": "No upcoming events"
+  }
+}

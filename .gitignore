@@ -8,6 +8,12 @@ lerna-debug.log*
 
 output.png
 
+# keep repo small ignore all icons besides the component's icons
+fonts/OpenMoji/openmoji-72x72-black/*
+!fonts/OpenMoji/openmoji-72x72-black/1F4C5.png
+!fonts/OpenMoji/openmoji-72x72-black/1F4E8.png
+!fonts/OpenMoji/openmoji-72x72-black/1F600.png
+
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
