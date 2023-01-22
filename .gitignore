@@ -11,6 +11,7 @@ output.png
 # keep repo small ignore all icons besides the component's icons
 fonts/OpenMoji/openmoji-72x72-black/*
 !fonts/OpenMoji/openmoji-72x72-black/1F4C5.png
+!fonts/OpenMoji/openmoji-72x72-black/1F4C5-i.png
 !fonts/OpenMoji/openmoji-72x72-black/1F4E8.png
 !fonts/OpenMoji/openmoji-72x72-black/1F600.png
 
