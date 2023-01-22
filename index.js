@@ -5,7 +5,9 @@ require('dotenv').config();
 
 const dWidth = 640;
 const dHeight = 384;
-const padding = 10;
+const iWidth = dHeight;
+const iHeight = dWidth;
+const padding = 15;
 
 const compWeather = require('./components/weather/index.js');
 const w = new compWeather();
@@ -69,8 +71,29 @@ const hellos = [
 ];
 
 const entities = {
-  'sunny': ''
+  'clear-night': '',
+  'clear-day': '',
+  'partly-cloudy-day': '',
+  'partly-cloudy-night': '',
+  'cloudy': '',
+  'fog': '',
+  'wind': '',
+  'rain': '',
+  'sleet': '',
+  'snow': '',
+  'hail': '',
+  'thunderstorm': ''
 };
+
+const days = [
+  'Sonntag',
+  'Montag',
+  'Dienstag',
+  'Mittwoch',
+  'Donnerstag',
+  'Freitag',
+  'Samstag'
+];
 
 const images = {};
 
@@ -85,6 +108,7 @@ const emojiFontPath = './fonts/OpenMoji/OpenMoji-Black.ttf';
 Promise.all([
   ['rand', emojiDay],
   ['calendar', '1F4C5'],
+  ['calendarWhite', '1F4C5-i'],
   ['mail', '1F4E8'],
   ['smile', '1F600']
 ].map((imgObj) => {
@@ -95,16 +119,21 @@ Promise.all([
     });
 })).then((assets) => {
 
-  gd.create(dWidth, dHeight).then(async (img) => {
+  gd.createTrueColor(iWidth, iHeight).then(async (img) => {
+    let offsetY = 0;
     // background
-    img.colorAllocate(255, 255, 255);
-    const txtColor = img.colorAllocate(0, 0, 0);
+    const white = img.colorAllocate(255, 255, 255);
+    const black = img.colorAllocate(0, 0, 0);
+    img.filledRectangle(0, 0, iWidth, iHeight, white);
+    img.filledRectangle(0, 0, iWidth, 100, black);
 
     // Emoji of the day
-    const emojiDayDisplay = (emojiDay.length > 8) ? emojiDay.substring(0,8) + '…' : emojiDay;
-    let bbox = bboxCalc(img, emojiDayDisplay, 12, fontPath);
-    img.stringFT(txtColor, fontPath, 12, 0, dWidth - 72 - padding + ((72 - bbox.width)/2), 2 * padding + 72, emojiDayDisplay);
-    images.rand.copy(img, dWidth - 72 - padding, padding, 0, 0, 72, 72, 72, 72);
+    // const emojiDayDisplay = (emojiDay.length > 8) ? emojiDay.substring(0,8) + '…' : emojiDay;
+    // let bbox = bboxCalc(img, emojiDayDisplay, 12, fontPath);
+    // img.stringFT(txtColor, fontPath, 12, 0, dWidth - 72 - padding + ((72 - bbox.width)/2), 2 * padding + 72, emojiDayDisplay);
+    // images.rand.copy(img, dWidth - 72 - padding, padding, 0, 0, 72, 72, 72, 72);
+
+    images.calendarWhite.copy(img, padding, padding, 0, 0, 72, 72);
 
     // Hello Date
     const hello = hellos[Math.floor(hellos.length * Math.random())][1];
@@ -112,23 +141,33 @@ Promise.all([
     const todayStr = ((today.getDate() < 10) ? '0' : '') + (today.getDate()) + '.' +
       ((today.getMonth()+1 < 10) ? '0' : '') + (today.getMonth()+1) + '.' +
       today.getFullYear();
-    img.stringFT(txtColor, fontPath, 24, 0, 10, 34, todayStr + ', ' + hello);
+      
+    img.stringFT(white, fontPath, 16, 0, padding * 2 + 72, 26  + padding, days[today.getDay()]);
+    img.stringFT(white, fontPath, 24, 0, padding * 2 + 72 - 2, 24  + padding + 36, todayStr);
 
-    // await mail.setup();
-    // await mail.draw(padding, 24 + 2 * padding, img, images.mail, fontPath);
-    
+    offsetY += 100 + padding;
+
     await cal.setup();
-    await cal.draw(padding, 24 + 2 * padding, img, images.calendar, fontPath);
-    // w.setup().then(() => {
-    //   w.draw(img, 0, 0);
-    //   return img.savePng('output.png', 1);
-    // }).then(() => {
-    //   img.destroy();
-    //   console.log('DONE');
-    // });
-    // cal.setup()
-    //   .then(() => cal.draw());
-    // mail.setup();
+    const calHeight = await cal.draw(padding, offsetY, img, images.calendar, fontPath);
+
+    offsetY += calHeight;
+
+    img.line(0, offsetY, iWidth, offsetY, black);
+
+    offsetY += padding;
+
+    await mail.setup();
+    const mailHeight = await mail.draw(padding, offsetY, img, images.mail, fontPath);
+
+    offsetY += mailHeight;
+
+    img.line(0, offsetY, iWidth, offsetY, black);
+
+    offsetY += padding;
+
+    await w.setup();
+    await w.draw(padding, offsetY, img, weatherFontPath, entities, fontPath, iHeight - offsetY - padding, iWidth - 2 * padding);
+
     return img.savePng('output.png', 1);
   });
 });

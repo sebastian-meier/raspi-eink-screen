@@ -6,8 +6,8 @@ class compMail {
 
   notes = [];
 
-  notesLimit = 2;
-  notesLineMax = 16;
+  notesLimit = 1;
+  notesLineMax = 26;
   emailShorten = process.env.EMAIL_SHORTEN.split(';').map(e => e.split(','));
 
   allowedSenders = process.env.ALLOWED_SENDERS.split(',');
@@ -156,14 +156,16 @@ class compMail {
         if (from.toLowerCase().includes(e[0])) { from = e[1] }
       });
       from += ':';
-      mailImg.copyResized(img, x, y + offsetY, 0, 0, 36, 36, 72, 72);
-      img.stringFT(txtColor, font, 18, 0, x + 40, y + 26 + offsetY, from);
-      let bbox = bboxCalc(img, from, 18, font);
-      img.line(x, y + 36 + offsetY, x + 40 + bbox.width, y + 36 + offsetY, txtColor);
-      img.stringFT(txtColor, font, 18, 0, x, y + 66 + offsetY, note.description);
+      mailImg.copyResized(img, x, y + offsetY, 0, 0, 24, 24, 72, 72);
+      img.stringFT(txtColor, font, 16, 0, x + 24, y + 18 + offsetY, from);
+      let bbox = bboxCalc(img, from, 16, font);
+      img.line(x, y + 22 + offsetY, x + 24 + bbox.width, y + 22 + offsetY, txtColor);
+      img.stringFT(txtColor, font, 18, 0, x, y + 50 + offsetY, note.description);
       bbox = bboxCalc(img, note.description, 18, font);
-      offsetY += 66 + bbox.height;
+      offsetY += 50 + bbox.height;
     });
+
+    return offsetY;
   }
 }
 

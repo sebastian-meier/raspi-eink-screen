@@ -21,6 +21,7 @@ class compCalendar {
             today.setHours(0);
             today.setMinutes(0);
             today.setSeconds(0);
+            today.setMilliseconds(0);
           const tomorrow = new Date(today);
           tomorrow.setDate(tomorrow.getDate() + 1);
           const events = ical.parseICS(data);
@@ -29,10 +30,10 @@ class compCalendar {
               const ee = events[e];
               if (ee.type === 'VEVENT') {
                 let eDate = ee.start;
-                if (eDate.dateOnly) {
-                  eDate.setHours(eDate.getHours()+1);
-                }
-                if (ee.start >= today && ee.start <= tomorrow) {
+                // if (eDate.dateOnly) {
+                //   eDate.setHours(eDate.getHours()+1);
+                // }
+                if (eDate >= today && eDate <= tomorrow) {
                   this.nextEvents.push({
                     title: ee.summary,
                     date: (ee.start.getDate() === today.getDate()) ? translations.today[this.lang] : translations.tomorrow[this.lang]
@@ -53,16 +54,18 @@ class compCalendar {
     if (this.nextEvents.length < 1) {
       calImg.copyResized(img, x, y + offsetY, 0, 0, 36, 36, 72, 72);
       img.stringFT(txtColor, font, 18, 0, x + 40, y + 26 + offsetY, translations.no_events[this.lang]);
+      return 40;
     } else {
       this.nextEvents.forEach((event) => {
-        calImg.copyResized(img, x, y + offsetY, 0, 0, 36, 36, 72, 72);
-        img.stringFT(txtColor, font, 18, 0, x + 40, y + 26 + offsetY, event.date);
-        let bbox = bboxCalc(img, event.date, 18, font);
-        img.line(x, y + 36 + offsetY, x + 40 + bbox.width, y + 36 + offsetY, txtColor);
-        img.stringFT(txtColor, font, 18, 0, x, y + 66 + offsetY, event.title);
+        calImg.copyResized(img, x, y + offsetY, 0, 0, 24, 24, 72, 72);
+        img.stringFT(txtColor, font, 16, 0, x + 24, y + 20 + offsetY, event.date);
+        let bbox = bboxCalc(img, event.date, 16, font);
+        img.line(x, y + 26 + offsetY, x + 24 + bbox.width, y + 26 + offsetY, txtColor);
+        img.stringFT(txtColor, font, 18, 0, x, y + 50 + offsetY, event.title);
         bbox = bboxCalc(img, event.title, 18, font);
-        offsetY += 66 + bbox.height;
+        offsetY += 50 + bbox.height;
       });
+      return offsetY;
     }
   }
 }
