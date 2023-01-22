@@ -1,7 +1,32 @@
 const gd = require('node-gd');
+
+const Gpio = require('onoff').Gpio;
+const nodaryEncoder = require('nodary-encoder');
+const epd7x5 = require('epd7x5');
+
+const myEncoder = nodaryEncoder(20, 21);
+
+myEncoder.on('rotation', (direction, value) => {
+  if (direction === 'R') {
+    console.log('right', value);
+  } else {
+    console.log('left', value);
+  }
+});
+
+const rotButton = new Gpio(16, 'in', 'both');
+rotButton.watch((err, value) => {
+  if (err) {
+    console.error(err);
+    return;
+  }
+  console.log(value);
+});
+
 const fs = require('fs');
-const {bboxCalc} = require('./utils');
 require('dotenv').config();
+
+epd7x5.init();
 
 const dWidth = 640;
 const dHeight = 384;
@@ -103,7 +128,7 @@ const emojiDay = dirFiles[Math.floor(Math.random() * dirFiles.length)].split('.'
 // TODO: Asian font glyps 
 const fontPath = './fonts/Share_Tech_Mono/ShareTechMono-Regular.ttf';
 const weatherFontPath = './fonts/weathericons/weathericons-regular-webfont.ttf';
-const emojiFontPath = './fonts/OpenMoji/OpenMoji-Black.ttf';
+// const emojiFontPath = './fonts/OpenMoji/OpenMoji-Black.ttf';
 
 Promise.all([
   ['rand', emojiDay],
@@ -119,6 +144,7 @@ Promise.all([
     });
 })).then((assets) => {
 
+  const epdImg = epd7x5.getImageBuffer();
   gd.createTrueColor(iWidth, iHeight).then(async (img) => {
     let offsetY = 0;
     // background
@@ -168,6 +194,8 @@ Promise.all([
     await w.setup();
     await w.draw(padding, offsetY, img, weatherFontPath, entities, fontPath, iHeight - offsetY - padding, iWidth - 2 * padding);
 
-    return img.savePng('output.png', 1);
+    img.copyRotated(epdImg, 0, 0, 0, 0, dWidth, dHeight, 90);
+
+    epd7x5.displayImageBuffer(epdImg);
   });
 });
